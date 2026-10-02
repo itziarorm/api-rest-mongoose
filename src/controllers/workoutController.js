@@ -1,3 +1,4 @@
+const { updateOne } = require("../models/workoutModel");
 const workoutService = require("../services/workoutService");
 
 const getAllWorkouts = async (req, res) => {
@@ -92,8 +93,50 @@ const createNewWorkout = async (req, res) => {
     }
 };
 
+const updateOneWorkout = async (req, res) => {
+    const {
+        body,
+        params: { workoutId },
+    } = req;
+
+    if (!workoutId){
+        return res
+            .status(400)
+            .send({
+                status: "FAILED",
+                data: { error: "Parameter ':workoutId' can not be empty" },
+            });
+
+    }
+
+    try {
+        const updatedWorkout = await workoutService.updateOneWorkout(workoutId, body);
+
+        if (!updatedWorkout) {
+            return res
+                .status(400)
+                .send({
+                    status: "FAILED",
+                    data: { error: `Can't find workout with the id '${workoutId}'`}
+                });
+        }
+
+        res.send({ status: "OK", data: updatedWorkout });
+        
+    } catch (error) {
+        res
+            .status(error?.status || 500)
+            .send({
+                status: "FAILED",
+                message: "Error al realizar la petición",
+                data: { error: error?.message || error }
+            });
+    }
+};
+
 module.exports = {
     getAllWorkouts,
     getOneWorkout,
-    createNewWorkout
+    createNewWorkout,
+    updateOneWorkout
 }
